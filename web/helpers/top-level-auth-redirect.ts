@@ -1,4 +1,4 @@
-export default function topLevelAuthRedirect({ apiKey, hostName, shop }) {
+export default function topLevelAuthRedirect({ apiKey, hostName, shop }: {apiKey: string, hostName: string, shop: string}) {
   return `<!DOCTYPE html>
 <html>
   <head>

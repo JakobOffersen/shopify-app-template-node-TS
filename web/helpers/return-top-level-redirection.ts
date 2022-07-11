@@ -1,4 +1,4 @@
-export default function returnTopLevelRedirection(req, res, redirectUrl) {
+export default function returnTopLevelRedirection(req, res, redirectUrl: URL) {
   const bearerPresent = req.headers.authorization?.match(/Bearer (.*)/);
 
   // If the request has a bearer token, the app is currently embedded, and must break out of the iframe to

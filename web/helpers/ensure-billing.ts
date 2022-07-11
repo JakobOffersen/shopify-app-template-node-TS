@@ -11,7 +11,7 @@ const RECURRING_INTERVALS = [
   BillingInterval.Annual,
 ];
 
-let isProd;
+let isProd: boolean
 
 /**
  * You may want to charge merchants for using your app. This helper provides that function by checking if the current

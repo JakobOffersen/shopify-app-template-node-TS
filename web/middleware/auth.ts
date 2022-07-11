@@ -1,14 +1,23 @@
-import { Shopify } from "@shopify/shopify-api";
+import { AuthQuery, Shopify } from "@shopify/shopify-api";
+import { ShopifyError } from "@shopify/shopify-api/dist/error.js";
 import { gdprTopics } from "@shopify/shopify-api/dist/webhooks/registry.js";
+import * as core from 'express-serve-static-core';
 
 import ensureBilling from "../helpers/ensure-billing.js";
 import topLevelAuthRedirect from "../helpers/top-level-auth-redirect.js";
 
-export default function applyAuthMiddleware(
-  app,
-  { billing = { required: false } } = { billing: { required: false } }
-) {
-  app.get("/api/auth", async (req, res) => {
+type Params = {}
+type ResBody = {}
+type ReqBody = {}
+type ReqQuery = { shop: string }
+
+type Opts = {
+  billing: {
+    required: boolean
+  }
+}
+export default function applyAuthMiddleware(app: core.Express, { billing }: Opts = { billing: { required: false }}) {
+  app.get<"/api/auth", Params, ResBody, ReqBody, {shop: string }>("/api/auth", async (req, res) => {
     if (!req.query.shop) {
       res.status(500);
       return res.send("No shop provided");
@@ -29,7 +38,7 @@ export default function applyAuthMiddleware(
     res.redirect(redirectUrl);
   });
 
-  app.get("/api/auth/toplevel", (req, res) => {
+  app.get<"/api/auth/toplevel", Params, ResBody, ReqBody, ReqQuery>("/api/auth/toplevel", (req, res) => {
     res.cookie(app.get("top-level-oauth-cookie"), "1", {
       signed: true,
       httpOnly: true,
@@ -47,7 +56,7 @@ export default function applyAuthMiddleware(
     );
   });
 
-  app.get("/api/auth/callback", async (req, res) => {
+  app.get<"/api/auth/callback", Params, string, ReqBody, AuthQuery>("/api/auth/callback", async (req, res) => {
     try {
       const session = await Shopify.Auth.validateAuthCallback(
         req,
@@ -96,20 +105,20 @@ export default function applyAuthMiddleware(
       res.redirect(redirectUrl);
     } catch (e) {
       console.warn(e);
-      switch (true) {
-        case e instanceof Shopify.Errors.InvalidOAuthError:
-          res.status(400);
-          res.send(e.message);
-          break;
-        case e instanceof Shopify.Errors.CookieNotFound:
-        case e instanceof Shopify.Errors.SessionNotFound:
-          // This is likely because the OAuth session cookie expired before the merchant approved the request
+      if (e instanceof Shopify.Errors.InvalidOAuthError) {
+        res.status(400);
+        res.send(e.message)
+        return
+      } else if(e instanceof Shopify.Errors.CookieNotFound || e instanceof Shopify.Errors.SessionNotFound) {
+        // This is likely because the OAuth session cookie expired before the merchant approved the request
           res.redirect(`/api/auth?shop=${req.query.shop}`);
-          break;
-        default:
-          res.status(500);
-          res.send(e.message);
-          break;
+          return
+      } else if (e instanceof Error) {
+        res.status(500);
+        res.send(e.message);
+      } else {
+        res.status(500);
+        res.send("An unknown error occured")
       }
     }
   });
