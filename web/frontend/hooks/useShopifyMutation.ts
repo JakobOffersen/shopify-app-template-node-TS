@@ -11,7 +11,7 @@ import { useAuthenticatedFetch } from "./useAuthenticatedFetch.js";
  *
  * @returns {Array} A tuple containing the mutation function and the mutation status.
  */
-export const useShopifyMutation = ({ query }) => {
+export const useShopifyMutation = ({ query }: {query: string}) => {
   const authenticatedFetch = useAuthenticatedFetch();
   const graphQLClient = new GraphQLClient("/api/graphql", {
     fetch: authenticatedFetch,
