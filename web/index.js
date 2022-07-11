@@ -32,7 +32,7 @@ const DB_PATH = `${process.cwd()}/database.sqlite`
 Shopify.Context.initialize({
 	API_KEY: process.env.SHOPIFY_API_KEY,
 	API_SECRET_KEY: process.env.API_SECRET_KEY,
-	SCOPES: process.env.SCOPES?.split(","),
+	SCOPES: process.env.SCOPES.split(","),
 	HOST_NAME: process.env.HOST.replace(/https?:\/\//, ""),
 	HOST_SCHEME: process.env.HOST.split("://")[0],
 	API_VERSION: ApiVersion.April22,
