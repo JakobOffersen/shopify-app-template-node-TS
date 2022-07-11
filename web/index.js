@@ -12,7 +12,8 @@ import { BillingInterval } from "./helpers/ensure-billing.js";
 
 const USE_ONLINE_TOKENS = true;
 const TOP_LEVEL_OAUTH_COOKIE = "shopify_top_level_oauth";
-const PORT = parseInt(process.env.BACKEND_PORT, 10);
+
+const PORT = parseInt(process.env.BACKEND_PORT || process.env.PORT, 10);
 const isTest = process.env.NODE_ENV === "test" || !!process.env.VITE_TEST_BUILD;
 
 const versionFilePath = "./version.txt";
@@ -29,7 +30,7 @@ const DB_PATH = `${process.cwd()}/database.sqlite`;
 
 Shopify.Context.initialize({
   API_KEY: process.env.SHOPIFY_API_KEY,
-  API_SECRET_KEY: process.env.API_SECRET_KEY,
+  API_SECRET_KEY: process.env.SHOPIFY_API_SECRET,
   SCOPES: process.env.SCOPES.split(","),
   HOST_NAME: process.env.HOST.replace(/https?:\/\//, ""),
   HOST_SCHEME: process.env.HOST.split("://")[0],
@@ -42,7 +43,7 @@ Shopify.Context.initialize({
 
 // Storing the currently active shops in memory will force them to re-login when your server restarts. You should
 // persist this object in your app.
-const ACTIVE_SHOPIFY_SHOPS = new Map<string, string>()
+const ACTIVE_SHOPIFY_SHOPS = {};
 Shopify.Webhooks.Registry.addHandler("APP_UNINSTALLED", {
   path: "/api/webhooks",
   webhookHandler: async (topic, shop, body) =>
