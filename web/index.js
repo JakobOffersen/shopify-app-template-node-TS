@@ -4,12 +4,11 @@ import fs from "fs"
 import express from "express"
 import cookieParser from "cookie-parser"
 import { Shopify, ApiVersion } from "@shopify/shopify-api"
-import * as dotenv from "dotenv"
+
 import applyAuthMiddleware from "./middleware/auth.js"
 import verifyRequest from "./middleware/verify-request.js"
 import { setupGDPRWebHooks } from "./gdpr.js"
 import { BillingInterval } from "./helpers/ensure-billing.js"
-dotenv.config()
 
 const USE_ONLINE_TOKENS = true
 const TOP_LEVEL_OAUTH_COOKIE = "shopify_top_level_oauth"
@@ -31,7 +30,7 @@ const DB_PATH = `${process.cwd()}/database.sqlite`
 
 Shopify.Context.initialize({
 	API_KEY: process.env.SHOPIFY_API_KEY,
-	API_SECRET_KEY: process.env.API_SECRET_KEY,
+	API_SECRET_KEY: process.env.SHOPIFY_API_SECRET,
 	SCOPES: process.env.SCOPES.split(","),
 	HOST_NAME: process.env.HOST.replace(/https?:\/\//, ""),
 	HOST_SCHEME: process.env.HOST.split("://")[0],
