@@ -1,7 +1,7 @@
-const path = require("path")
+const { join } = require("path")
 
 module.exports = {
-	content: [path.join(__dirname, "./pages/**/*.{js,ts,jsx,tsx}"), path.join(__dirname, "./components/**/*.{js,ts,jsx,tsx}"), path.join(__dirname, "./index.html"), path.join(__dirname, "./App.tsx")],
+	content: [join(__dirname, "./pages/**/*.{js,ts,jsx,tsx}"), join(__dirname, "./components/**/*.{js,ts,jsx,tsx}"), join(__dirname, "./index.html"), join(__dirname, "./App.tsx")],
 	theme: {
 		extend: {},
 	},
