@@ -67,5 +67,3 @@ export default defineConfig({
 		},
 	},
 })
-
-console.log(process.env.SHOPIFY_API_KEY)

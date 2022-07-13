@@ -23,7 +23,7 @@ export default function PageName() {
 					<Card sectioned>
 						<Heading>Heading</Heading>
 						<TextContainer>
-							<p className="text-bold bg-slate-600">Body</p>
+							<p>Body</p>
 						</TextContainer>
 					</Card>
 					<Card sectioned>
