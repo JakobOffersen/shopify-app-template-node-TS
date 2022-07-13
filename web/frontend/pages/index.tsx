@@ -17,6 +17,7 @@ export default function HomePage() {
 							<Stack.Item fill>
 								<TextContainer spacing="loose">
 									<Heading>Nice work on building a Shopify app 🎉</Heading>
+									<h1 className="bg-green-500 text-bold underline text-3xl">H1 styled with tailwindcss</h1>
 									<p>
 										Your app is ready to explore! It contains everything you need to get started including the{" "}
 										<Link url="https://polaris.shopify.com/" external>

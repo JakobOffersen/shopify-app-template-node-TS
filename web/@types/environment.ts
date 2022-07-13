@@ -3,7 +3,7 @@ declare global {
     interface ProcessEnv {
       BACKEND_PORT: string
       FRONTEND_PORT: string
-      NODE_ENV: "test" | "production"
+      NODE_ENV: "test" | "production" | "development"
 
       SHOPIFY_API_KEY: string
       API_SECRET_KEY: string
