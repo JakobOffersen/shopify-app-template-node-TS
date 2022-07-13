@@ -32,5 +32,5 @@ export default function topLevelAuthRedirect({ apiKey, hostName, shop }) {
     </script>
   </head>
   <body></body>
-</html>`;
+</html>`
 }

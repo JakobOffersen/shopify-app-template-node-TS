@@ -1,6 +1,6 @@
-import { useMemo } from "react";
-import { useAuthenticatedFetch } from "./useAuthenticatedFetch";
-import { QueryKey, useQuery, UseQueryOptions } from "react-query";
+import { useMemo } from 'react'
+import { useAuthenticatedFetch } from './useAuthenticatedFetch'
+import { QueryKey, useQuery, UseQueryOptions } from 'react-query'
 
 type Props = {
   url: RequestInfo
@@ -20,16 +20,16 @@ type Props = {
  * @returns Return value of useQuery.  See: https://react-query.tanstack.com/reference/useQuery.
  */
 export const useAppQuery = ({ url, fetchInit = {}, reactQueryOptions }: Props) => {
-  const authenticatedFetch = useAuthenticatedFetch();
+  const authenticatedFetch = useAuthenticatedFetch()
   const fetch = useMemo(() => {
     return async () => {
-      const response = await authenticatedFetch(url, fetchInit);
-      return response.json();
-    };
-  }, [url, JSON.stringify(fetchInit)]);
+      const response = await authenticatedFetch(url, fetchInit)
+      return response.json()
+    }
+  }, [url, JSON.stringify(fetchInit)])
 
   return useQuery(url as QueryKey, fetch, {
     ...reactQueryOptions,
-    refetchOnWindowFocus: false,
-  });
-};
+    refetchOnWindowFocus: false
+  })
+}

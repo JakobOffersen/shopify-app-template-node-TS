@@ -1,211 +1,202 @@
-import { Shopify } from "@shopify/shopify-api";
-import { describe, expect, test, vi } from "vitest";
+import { Shopify } from '@shopify/shopify-api'
+import { describe, expect, test, vi } from 'vitest'
 
-import ensureBilling, { BillingInterval } from "../ensure-billing";
+import ensureBilling, { BillingInterval } from '../ensure-billing'
 
-const SHOPIFY_CHARGE_NAME = "Shopify app test billing";
+const SHOPIFY_CHARGE_NAME = 'Shopify app test billing'
 
-describe("ensureBilling", async () => {
-  const session = new Shopify.Session.Session("1", "test-shop", "state", true);
-  session.scope = Shopify.Context.SCOPES;
-  session.accessToken = "access-token";
-  session.expires = null;
+describe('ensureBilling', async () => {
+  const session = new Shopify.Session.Session('1', 'test-shop', 'state', true)
+  session.scope = Shopify.Context.SCOPES
+  session.accessToken = 'access-token'
+  session.expires = null
 
-  describe("with no payments", async () => {
-    test("requests a single payment if non-recurring", async () => {
-      const spy = mockGraphQLQueries([
-        EMPTY_SUBSCRIPTIONS,
-        PURCHASE_ONE_TIME_RESPONSE,
-      ]);
+  describe('with no payments', async () => {
+    test('requests a single payment if non-recurring', async () => {
+      const spy = mockGraphQLQueries([EMPTY_SUBSCRIPTIONS, PURCHASE_ONE_TIME_RESPONSE])
 
       const [hasPayment, confirmationUrl] = await ensureBilling(session, {
         chargeName: SHOPIFY_CHARGE_NAME,
         amount: 5.0,
-        interval: BillingInterval.OneTime,
-      });
+        interval: BillingInterval.OneTime
+      })
 
-      expect(hasPayment).toBe(false);
-      expect(confirmationUrl).toBe("totally-real-url");
+      expect(hasPayment).toBe(false)
+      expect(confirmationUrl).toBe('totally-real-url')
 
-      expect(spy).toHaveBeenCalledTimes(2);
+      expect(spy).toHaveBeenCalledTimes(2)
       expect(spy).toHaveBeenNthCalledWith(
         1,
         expect.objectContaining({
           data: expect.objectContaining({
-            query: expect.stringContaining("oneTimePurchases"),
-          }),
+            query: expect.stringContaining('oneTimePurchases')
+          })
         })
-      );
+      )
       expect(spy).toHaveBeenNthCalledWith(
         2,
         expect.objectContaining({
           data: expect.objectContaining({
-            query: expect.stringContaining("appPurchaseOneTimeCreate"),
-          }),
+            query: expect.stringContaining('appPurchaseOneTimeCreate')
+          })
         })
-      );
-    });
+      )
+    })
 
-    test("requests a subscription if recurring", async () => {
-      const spy = mockGraphQLQueries([
-        EMPTY_SUBSCRIPTIONS,
-        PURCHASE_SUBSCRIPTION_RESPONSE,
-      ]);
+    test('requests a subscription if recurring', async () => {
+      const spy = mockGraphQLQueries([EMPTY_SUBSCRIPTIONS, PURCHASE_SUBSCRIPTION_RESPONSE])
 
       const [hasPayment, confirmationUrl] = await ensureBilling(session, {
         chargeName: SHOPIFY_CHARGE_NAME,
         amount: 5.0,
-        interval: BillingInterval.Every30Days,
-      });
+        interval: BillingInterval.Every30Days
+      })
 
-      expect(hasPayment).toBe(false);
-      expect(confirmationUrl).toBe("totally-real-url");
+      expect(hasPayment).toBe(false)
+      expect(confirmationUrl).toBe('totally-real-url')
 
-      expect(spy).toHaveBeenCalledTimes(2);
+      expect(spy).toHaveBeenCalledTimes(2)
       expect(spy).toHaveBeenNthCalledWith(
         1,
         expect.objectContaining({
-          data: expect.stringContaining("activeSubscriptions"),
+          data: expect.stringContaining('activeSubscriptions')
         })
-      );
+      )
       expect(spy).toHaveBeenNthCalledWith(
         2,
         expect.objectContaining({
           data: expect.objectContaining({
-            query: expect.stringContaining("appSubscriptionCreate"),
-          }),
+            query: expect.stringContaining('appSubscriptionCreate')
+          })
         })
-      );
-    });
-  });
+      )
+    })
+  })
 
-  describe("with payments", async () => {
-    test("does not request subscription if non-recurring", async () => {
-      const spy = mockGraphQLQueries([EXISTING_ONE_TIME_PAYMENT]);
+  describe('with payments', async () => {
+    test('does not request subscription if non-recurring', async () => {
+      const spy = mockGraphQLQueries([EXISTING_ONE_TIME_PAYMENT])
 
       const [hasPayment, confirmationUrl] = await ensureBilling(session, {
         chargeName: SHOPIFY_CHARGE_NAME,
         amount: 5.0,
-        interval: BillingInterval.OneTime,
-      });
+        interval: BillingInterval.OneTime
+      })
 
-      expect(hasPayment).toBe(true);
-      expect(confirmationUrl).toBeNull();
+      expect(hasPayment).toBe(true)
+      expect(confirmationUrl).toBeNull()
 
-      expect(spy).toHaveBeenCalledTimes(1);
+      expect(spy).toHaveBeenCalledTimes(1)
       expect(spy).toHaveBeenNthCalledWith(
         1,
         expect.objectContaining({
           data: expect.objectContaining({
-            query: expect.stringContaining("oneTimePurchases"),
-          }),
+            query: expect.stringContaining('oneTimePurchases')
+          })
         })
-      );
-    });
+      )
+    })
 
-    test("ignores non-active one-time payments", async () => {
-      const spy = mockGraphQLQueries([
-        EXISTING_INACTIVE_ONE_TIME_PAYMENT,
-        PURCHASE_ONE_TIME_RESPONSE,
-      ]);
+    test('ignores non-active one-time payments', async () => {
+      const spy = mockGraphQLQueries([EXISTING_INACTIVE_ONE_TIME_PAYMENT, PURCHASE_ONE_TIME_RESPONSE])
 
       const [hasPayment, confirmationUrl] = await ensureBilling(session, {
         chargeName: SHOPIFY_CHARGE_NAME,
         amount: 5.0,
-        interval: BillingInterval.OneTime,
-      });
+        interval: BillingInterval.OneTime
+      })
 
-      expect(hasPayment).toBe(false);
-      expect(confirmationUrl).toBe("totally-real-url");
+      expect(hasPayment).toBe(false)
+      expect(confirmationUrl).toBe('totally-real-url')
 
-      expect(spy).toHaveBeenCalledTimes(2);
+      expect(spy).toHaveBeenCalledTimes(2)
       expect(spy).toHaveBeenNthCalledWith(
         1,
         expect.objectContaining({
           data: expect.objectContaining({
-            query: expect.stringContaining("oneTimePurchases"),
-          }),
+            query: expect.stringContaining('oneTimePurchases')
+          })
         })
-      );
+      )
       expect(spy).toHaveBeenNthCalledWith(
         2,
         expect.objectContaining({
           data: expect.objectContaining({
-            query: expect.stringContaining("appPurchaseOneTimeCreate"),
-          }),
+            query: expect.stringContaining('appPurchaseOneTimeCreate')
+          })
         })
-      );
-    });
+      )
+    })
 
-    test("paginates until a payment is found", async () => {
-      const spy = mockGraphQLQueries(EXISTING_ONE_TIME_PAYMENT_WITH_PAGINATION);
+    test('paginates until a payment is found', async () => {
+      const spy = mockGraphQLQueries(EXISTING_ONE_TIME_PAYMENT_WITH_PAGINATION)
 
       const [hasPayment, confirmationUrl] = await ensureBilling(session, {
         chargeName: SHOPIFY_CHARGE_NAME,
         amount: 5.0,
-        interval: BillingInterval.OneTime,
-      });
+        interval: BillingInterval.OneTime
+      })
 
-      expect(hasPayment).toBe(true);
-      expect(confirmationUrl).toBeNull();
+      expect(hasPayment).toBe(true)
+      expect(confirmationUrl).toBeNull()
 
-      expect(spy).toHaveBeenCalledTimes(2);
+      expect(spy).toHaveBeenCalledTimes(2)
       expect(spy).toHaveBeenNthCalledWith(
         1,
         expect.objectContaining({
           data: expect.objectContaining({
-            query: expect.stringContaining("oneTimePurchases"),
-            variables: expect.objectContaining({ endCursor: null }),
-          }),
+            query: expect.stringContaining('oneTimePurchases'),
+            variables: expect.objectContaining({ endCursor: null })
+          })
         })
-      );
+      )
       expect(spy).toHaveBeenNthCalledWith(
         2,
         expect.objectContaining({
           data: expect.objectContaining({
-            query: expect.stringContaining("oneTimePurchases"),
-            variables: expect.objectContaining({ endCursor: "end_cursor" }),
-          }),
+            query: expect.stringContaining('oneTimePurchases'),
+            variables: expect.objectContaining({ endCursor: 'end_cursor' })
+          })
         })
-      );
-    });
+      )
+    })
 
-    test("does not request subscription if recurring", async () => {
-      const spy = mockGraphQLQueries([EXISTING_SUBSCRIPTION]);
+    test('does not request subscription if recurring', async () => {
+      const spy = mockGraphQLQueries([EXISTING_SUBSCRIPTION])
 
       const [hasPayment, confirmationUrl] = await ensureBilling(session, {
         chargeName: SHOPIFY_CHARGE_NAME,
         amount: 5.0,
-        interval: BillingInterval.Annual,
-      });
+        interval: BillingInterval.Annual
+      })
 
-      expect(hasPayment).toBe(true);
-      expect(confirmationUrl).toBeNull();
+      expect(hasPayment).toBe(true)
+      expect(confirmationUrl).toBeNull()
 
-      expect(spy).toHaveBeenCalledTimes(1);
+      expect(spy).toHaveBeenCalledTimes(1)
       expect(spy).toHaveBeenNthCalledWith(
         1,
         expect.objectContaining({
-          data: expect.stringContaining("activeSubscriptions"),
+          data: expect.stringContaining('activeSubscriptions')
         })
-      );
-    });
-  });
-});
+      )
+    })
+  })
+})
 
 function mockGraphQLQueries(queryResponses) {
-  let queryIndex = 0;
+  let queryIndex = 0
   const querySpy = vi.fn().mockImplementation(() => {
-    return queryResponses[queryIndex++];
-  });
+    return queryResponses[queryIndex++]
+  })
 
-  vi.spyOn(Shopify.Clients, "Graphql").mockImplementation(() => {
+  vi.spyOn(Shopify.Clients, 'Graphql').mockImplementation(() => {
     return {
-      query: querySpy,
-    };
-  });
+      query: querySpy
+    }
+  })
 
-  return querySpy;
+  return querySpy
 }
 
 const EMPTY_SUBSCRIPTIONS = {
@@ -214,14 +205,14 @@ const EMPTY_SUBSCRIPTIONS = {
       currentAppInstallation: {
         oneTimePurchases: {
           edges: [],
-          pageInfo: { hasNextPage: false, endCursor: null },
+          pageInfo: { hasNextPage: false, endCursor: null }
         },
         activeSubscriptions: [],
-        userErrors: [],
-      },
-    },
-  },
-};
+        userErrors: []
+      }
+    }
+  }
+}
 
 const EXISTING_ONE_TIME_PAYMENT = {
   body: {
@@ -230,16 +221,16 @@ const EXISTING_ONE_TIME_PAYMENT = {
         oneTimePurchases: {
           edges: [
             {
-              node: { name: SHOPIFY_CHARGE_NAME, test: true, status: "ACTIVE" },
-            },
+              node: { name: SHOPIFY_CHARGE_NAME, test: true, status: 'ACTIVE' }
+            }
           ],
-          pageInfo: { hasNextPage: false, endCursor: null },
+          pageInfo: { hasNextPage: false, endCursor: null }
         },
-        activeSubscriptions: [],
-      },
-    },
-  },
-};
+        activeSubscriptions: []
+      }
+    }
+  }
+}
 
 const EXISTING_ONE_TIME_PAYMENT_WITH_PAGINATION = [
   {
@@ -249,15 +240,15 @@ const EXISTING_ONE_TIME_PAYMENT_WITH_PAGINATION = [
           oneTimePurchases: {
             edges: [
               {
-                node: { name: "some_other_name", test: true, status: "ACTIVE" },
-              },
+                node: { name: 'some_other_name', test: true, status: 'ACTIVE' }
+              }
             ],
-            pageInfo: { hasNextPage: true, endCursor: "end_cursor" },
+            pageInfo: { hasNextPage: true, endCursor: 'end_cursor' }
           },
-          activeSubscriptions: [],
-        },
-      },
-    },
+          activeSubscriptions: []
+        }
+      }
+    }
   },
   {
     body: {
@@ -269,18 +260,18 @@ const EXISTING_ONE_TIME_PAYMENT_WITH_PAGINATION = [
                 node: {
                   name: SHOPIFY_CHARGE_NAME,
                   test: true,
-                  status: "ACTIVE",
-                },
-              },
+                  status: 'ACTIVE'
+                }
+              }
             ],
-            pageInfo: { hasNextPage: false, endCursor: null },
+            pageInfo: { hasNextPage: false, endCursor: null }
           },
-          activeSubscriptions: [],
-        },
-      },
-    },
-  },
-];
+          activeSubscriptions: []
+        }
+      }
+    }
+  }
+]
 
 const EXISTING_INACTIVE_ONE_TIME_PAYMENT = {
   body: {
@@ -292,17 +283,17 @@ const EXISTING_INACTIVE_ONE_TIME_PAYMENT = {
               node: {
                 name: SHOPIFY_CHARGE_NAME,
                 test: true,
-                status: "PENDING",
-              },
-            },
+                status: 'PENDING'
+              }
+            }
           ],
-          pageInfo: { hasNextPage: false, endCursor: null },
+          pageInfo: { hasNextPage: false, endCursor: null }
         },
-        activeSubscriptions: [],
-      },
-    },
-  },
-};
+        activeSubscriptions: []
+      }
+    }
+  }
+}
 
 const EXISTING_SUBSCRIPTION = {
   body: {
@@ -310,32 +301,32 @@ const EXISTING_SUBSCRIPTION = {
       currentAppInstallation: {
         oneTimePurchases: {
           edges: [],
-          pageInfo: { hasNextPage: false, endCursor: null },
+          pageInfo: { hasNextPage: false, endCursor: null }
         },
-        activeSubscriptions: [{ name: SHOPIFY_CHARGE_NAME, test: true }],
-      },
-    },
-  },
-};
+        activeSubscriptions: [{ name: SHOPIFY_CHARGE_NAME, test: true }]
+      }
+    }
+  }
+}
 
 const PURCHASE_ONE_TIME_RESPONSE = {
   body: {
     data: {
       appPurchaseOneTimeCreate: {
-        confirmationUrl: "totally-real-url",
-        userErrors: [],
-      },
-    },
-  },
-};
+        confirmationUrl: 'totally-real-url',
+        userErrors: []
+      }
+    }
+  }
+}
 
 const PURCHASE_SUBSCRIPTION_RESPONSE = {
   body: {
     data: {
       appSubscriptionCreate: {
-        confirmationUrl: "totally-real-url",
-        userErrors: [],
-      },
-    },
-  },
-};
+        confirmationUrl: 'totally-real-url',
+        userErrors: []
+      }
+    }
+  }
+}

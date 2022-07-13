@@ -1,35 +1,35 @@
-import React, { useCallback } from "react"
-import { AppProvider } from "@shopify/polaris"
-import { useNavigate } from "@shopify/app-bridge-react"
-import translations from "@shopify/polaris/locales/en.json"
-import "@shopify/polaris/build/esm/styles.css"
-import { LinkLikeComponentProps } from "@shopify/polaris/build/ts/latest/src/utilities/link/types"
+import React, { useCallback } from 'react'
+import { AppProvider } from '@shopify/polaris'
+import { useNavigate } from '@shopify/app-bridge-react'
+import translations from '@shopify/polaris/locales/en.json'
+import '@shopify/polaris/build/esm/styles.css'
+import { LinkLikeComponentProps } from '@shopify/polaris/build/ts/latest/src/utilities/link/types'
 
 function AppBridgeLink({ url, children, external, ...rest }: LinkLikeComponentProps) {
-	const navigate = useNavigate()
-	const handleClick = useCallback(() => {
-		navigate(url)
-	}, [url])
+  const navigate = useNavigate()
+  const handleClick = useCallback(() => {
+    navigate(url)
+  }, [url])
 
-	const IS_EXTERNAL_LINK_REGEX = /^(?:[a-z][a-z\d+.-]*:|\/\/)/
+  const IS_EXTERNAL_LINK_REGEX = /^(?:[a-z][a-z\d+.-]*:|\/\/)/
 
-	if (external || IS_EXTERNAL_LINK_REGEX.test(url)) {
-		return (
-			<a target="_blank" rel="noopener noreferrer" href={url} {...rest}>
-				{children}
-			</a>
-		)
-	}
+  if (external || IS_EXTERNAL_LINK_REGEX.test(url)) {
+    return (
+      <a target="_blank" rel="noopener noreferrer" href={url} {...rest}>
+        {children}
+      </a>
+    )
+  }
 
-	return (
-		<a onClick={handleClick} {...rest}>
-			{children}
-		</a>
-	)
+  return (
+    <a onClick={handleClick} {...rest}>
+      {children}
+    </a>
+  )
 }
 
 type PolarisProviderProps = {
-	children: JSX.Element
+  children: JSX.Element
 }
 /**
  * Sets up the AppProvider from Polaris.
@@ -52,9 +52,9 @@ type PolarisProviderProps = {
  *
  */
 export function PolarisProvider({ children }: PolarisProviderProps) {
-	return (
-		<AppProvider i18n={translations} linkComponent={AppBridgeLink}>
-			{children}
-		</AppProvider>
-	)
+  return (
+    <AppProvider i18n={translations} linkComponent={AppBridgeLink}>
+      {children}
+    </AppProvider>
+  )
 }
